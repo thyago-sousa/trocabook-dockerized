@@ -1,0 +1,16 @@
+# Arquivo de senhas
+.env
+
+# Pasta de uploads (se usar volumes)
+uploads-data/
+
+# Arquivos de compilação do Maven/Gradle
+target/
+build/
+
+# Arquivos do IntelliJ
+.idea/
+
+# Arquivos do sistema operacional
+*.DS_Store
+Thumbs.db

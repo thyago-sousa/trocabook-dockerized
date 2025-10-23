@@ -1,0 +1,48 @@
+services:
+  trocabook-main:
+    build: ./Trocabook
+    container_name: trocabook-main
+    ports:
+      - "8080:8080"
+    environment:
+      - 'spring.datasource.url=jdbc:mysql://host.docker.internal:3306/trocabook'
+      - 'spring.datasource.username=root'
+      - 'spring.datasource.password=${DB_PASSWORD}'
+      - 'api.base.url=http://trocabook-admin:8181/dados'
+      - 'chat.api.base.url=http://trocabook-chat:8282/api/chat'
+      - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      - FILE_UPLOAD_DIR=/app/uploads
+    volumes:
+      - ./uploads-data:/app/uploads
+    networks:
+      - trocabook-net
+
+  trocabook-admin:
+    build: ./TrocabookAdminService
+    container_name: trocabook-admin
+    ports:
+      - "8181:8181"
+    environment:
+      - 'spring.datasource.url=jdbc:mysql://host.docker.internal:3306/trocabookAdmin'
+      - 'spring.datasource.username=root'
+      - 'spring.datasource.password=${DB_PASSWORD}'
+      - 'api.base.url=http://trocabook-main:8080/dados'
+    networks:
+      - trocabook-net
+
+  trocabook-chat:
+    build: ./TrocabookChatService
+    container_name: trocabook-chat
+    ports:
+      - "8282:8282"
+    environment:
+      - 'SPRING_DATA_MONGODB_URI=mongodb://host.docker.internal:27017/chatdb'
+    networks:
+      - trocabook-net
+
+networks:
+  trocabook-net:
+    driver: bridge
