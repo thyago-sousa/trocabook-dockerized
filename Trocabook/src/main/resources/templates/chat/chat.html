@@ -16,7 +16,7 @@
             <table class="cabecalho">
                 <tr>
                     <th id="cabecalhoelementos">
-                        <a href="/"><img src="/img/Design sem nome (7).svg"></a>
+                        <a href="/"><img src="/img/Design%20sem%20nome%20(7).svg"></a>
                         <div class="autocomplete-wrapper">
                             <input type="text" style="width: 100%; height: 35px;" id="pesquisa" placeholder="Pesquisar">
                             <div id="resultadosPesquisa" class="sugestoes-autocomplete"></div>
@@ -69,14 +69,26 @@
 
             <div class="messages" id="messagesContainer">
                 <div th:each="msg : ${mensagens}"
+                     th:attr="data-id=${msg.id}, title=${msg.conteudo}"
                      th:class="'message ' + (${msg.cdUsuarioRemetente == usuarioLogado.cdUsuario} ? 'user' : 'negociador')">
 
+                    <!-- Menu de opções só aparece nas mensagens do usuário logado -->
+                    <div th:if="${msg.cdUsuarioRemetente == usuarioLogado.cdUsuario}" class="menu-opcoes">
+                        <i class="fa-solid fa-ellipsis-vertical" onclick="abrirMenu(this)"></i>
+                        <div class="menu-dropdown">
+                            <button onclick="editarMensagem(this)">Editar</button>
+                            <button onclick="excluirMensagem(this)">Excluir</button>
+                        </div>
+                    </div>
+
+                    <!-- Foto do outro usuário (só aparece nas mensagens recebidas) -->
                     <img th:if="${msg.cdUsuarioRemetente != usuarioLogado.cdUsuario}"
                          th:src="${usuarioNegociante.foto}" alt="Negociante">
 
                     <p th:text="${msg.conteudo}"></p>
                 </div>
             </div>
+
 
             <form id="chatForm" class="message-input">
                 <input type="hidden" id="cdUsuarioLivro" th:value="${mensagemDTO.cdUsuarioLivro}">
@@ -104,19 +116,42 @@
 
         // Função para renderizar uma mensagem
         function adicionarMensagemNoContainer(msg) {
-            const classe = msg.cdUsuarioRemetente === cdUsuarioRemetente ? 'user' : 'negociador';
+                const classe = msg.cdUsuarioRemetente === cdUsuarioRemetente ? 'user' : 'negociador';
+                const div = document.createElement('div');
+                div.className = `message ${classe}`;
+                div.setAttribute('data-id', msg.id || ''); // adiciona o ID para edição/exclusão
 
-            const img = msg.cdUsuarioRemetente === cdUsuarioRemetente
-                ? ''
-                : `<img src="${document.querySelector('.chat-list img')?.src || '/img/user.png'}" alt="Negociante">`;
+                // Se for mensagem do outro usuário, mostra a imagem dele
+                const img = msg.cdUsuarioRemetente === cdUsuarioRemetente
+                    ? ''
+                    : `<img src="${document.querySelector('.chat-list img')?.src || '/img/user.png'}" alt="Negociante">`;
 
-            const div = document.createElement('div');
-            div.className = `message ${classe}`;
-            div.innerHTML = `${img}<p>${msg.conteudo}</p>`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-            ultimaQuantidade++;
-        }
+                // Se for mensagem do usuário logado, adiciona o menu de opções
+                const menu = msg.cdUsuarioRemetente === cdUsuarioRemetente
+                    ? `
+                        <div class="menu-opcoes">
+                            <i class="fa-solid fa-ellipsis-vertical" onclick="abrirMenu(this)"></i>
+                            <div class="menu-dropdown">
+                                <button onclick="editarMensagem(this)">Editar</button>
+                                <button onclick="excluirMensagem(this)">Excluir</button>
+                            </div>
+                        </div>
+                      `
+                    : '';
+
+                // Monta o HTML da mensagem
+                div.innerHTML = `
+                    ${menu}
+                    ${img}
+                    <p>${msg.conteudo}</p>
+                `;
+
+                // Adiciona ao container
+                container.appendChild(div);
+                container.scrollTop = container.scrollHeight;
+                ultimaQuantidade++;
+            }
+
 
         // Envio de mensagem
         document.querySelector('#chatForm').addEventListener('submit', async function(event) {
@@ -159,11 +194,58 @@
 
         // Atualiza a cada 4 segundos
         setInterval(atualizarMensagens, 4000);
+
+        function abrirMenu(icon) {
+            const menu = icon.nextElementSibling;
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // 🔹 Edição de mensagem
+        async function editarMensagem(botao) {
+            const msgDiv = botao.closest('.message');
+            const idMensagem = msgDiv.getAttribute('data-id');
+            const p = msgDiv.querySelector('p');
+
+            const novoConteudo = prompt("Editar mensagem:", p.textContent);
+            if (novoConteudo === null || novoConteudo.trim() === "") return;
+
+            const resposta = await fetch(`/chat/mensagens/${idMensagem}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({conteudo: novoConteudo})
+            });
+
+            const data = await resposta.json();
+            if (data.status === 'success') {
+                p.textContent = novoConteudo;
+                alert('Mensagem alterada com sucesso!');
+            } else {
+                alert('Erro ao alterar mensagem.');
+            }
+        }
+
+        // 🔹 Exclusão de mensagem
+        async function excluirMensagem(botao) {
+            const msgDiv = botao.closest('.message');
+            const idMensagem = msgDiv.getAttribute('data-id');
+
+            if (!confirm("Deseja realmente excluir esta mensagem?")) return;
+
+            const resposta = await fetch(`/chat/mensagens/${idMensagem}`, { method: 'DELETE' });
+            const data = await resposta.json();
+
+            if (data.status === 'success') {
+                msgDiv.remove();
+            } else {
+                alert('Erro ao excluir mensagem.');
+            }
+        }
+
     </script>
 
     <footer>
         <div class="rodapenovo">
-            <a href="/"><img src="/img/Design sem nome.svg"></a>
+            <a href="/static"><img src="/img/Design%20sem%20nome.svg"></a>
             <a href="/sobreNos"><p>Conheça nosso incrível projeto <br>de incentivo a reutilização</p></a>
             <a href="/ajuda"><p>Central de ajuda</p></a>
             <small>© 2025 Sistema Trocabook<br>Todos os direitos reservados</small>

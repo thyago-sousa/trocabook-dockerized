@@ -1,9 +1,11 @@
 package com.trocabook.Trocabook.service;
 
 import com.trocabook.Trocabook.controllers.response.ChatResponse;
+import com.trocabook.Trocabook.model.dto.ConversaDTO;
 import com.trocabook.Trocabook.model.dto.MensagemDTO;
+import com.trocabook.Trocabook.repository.UsuarioRepository;
+import com.trocabook.Trocabook.model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -11,20 +13,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
+
+import java.util.LinkedList;
 import java.util.List;
 
 @Service
 public class ChatService implements IChatService {
-    private final String url; // <-- NOVA LINHA
+    private static String url = "http://trocabook-chat:8282/api/chat";
 
     private RestTemplate restTemplate;
 
+    private UsuarioRepository usuarioRepository;
+
     @Autowired
-    public ChatService(RestTemplate restTemplate,
-                       @Value("${chat.api.base.url}") String url) { // <-- MUDANÇA AQUI
+    public ChatService(RestTemplate restTemplate, UsuarioRepository usuarioRepository) {
         this.restTemplate = restTemplate;
-        this.url = url; // <-- MUDANÇA AQUI
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -64,4 +68,65 @@ public class ChatService implements IChatService {
         );
         return response.getBody();
     }
+
+    @Override
+    public List<ConversaDTO> listarMensagensPorUsuarioConverter(List<MensagemDTO> listaMensagensEntreUsuarios, int cdUsuarioLogado) {
+        List<ConversaDTO> conversas = new LinkedList<>();
+
+        for (MensagemDTO mensagemDTO : listaMensagensEntreUsuarios) {
+
+
+            boolean enviadaPeloUsuarioLogado = true;
+
+            if (mensagemDTO.getCdUsuarioRemetente() != cdUsuarioLogado) {
+                mensagemDTO.setCdUsuarioDestinatario(mensagemDTO.getCdUsuarioRemetente());
+                mensagemDTO.setCdUsuarioRemetente(cdUsuarioLogado);
+                enviadaPeloUsuarioLogado = false;
+            }
+
+
+            Usuario destinatario = usuarioRepository
+                    .findById(mensagemDTO.getCdUsuarioDestinatario())
+                    .orElse(null);
+
+            if (destinatario != null) {
+                ConversaDTO conversa = new ConversaDTO();
+                conversa.setCdUsuarioLivro(mensagemDTO.getCdUsuarioLivro());
+                conversa.setCdUsuarioDestinatario(destinatario.getCdUsuario());
+                conversa.setNomeDestinatario(destinatario.getNmUsuario());
+                conversa.setFotoDestinatario(destinatario.getFoto());
+                conversa.setUltimaMensagem(mensagemDTO.getConteudo());
+                conversa.setEnviadaPeloUsuarioLogado(enviadaPeloUsuarioLogado);
+
+                conversas.add(conversa);
+            }
+        }
+
+        return conversas;
+    }
+
+    @Override
+    public ChatResponse<MensagemDTO> alterarMensagem(String id, String conteudo) {
+        HttpEntity<String> entidade = new HttpEntity<>(conteudo);
+        ResponseEntity<ChatResponse<MensagemDTO>> response = restTemplate.exchange(
+                url + "/mensagens/" + id,
+                HttpMethod.PUT,
+                entidade,
+                new ParameterizedTypeReference<ChatResponse<MensagemDTO>>() {}
+        );
+        return response.getBody();
+    }
+
+    @Override
+    public ChatResponse<Void> excluirMensagem(String id){
+        ResponseEntity<ChatResponse<Void>> response = restTemplate.exchange(
+                url + "/mensagens/" + id,
+                HttpMethod.DELETE,
+                null,
+                new ParameterizedTypeReference<ChatResponse<Void>>() {
+                }
+        );
+        return response.getBody();
+    }
+
 }

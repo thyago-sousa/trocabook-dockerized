@@ -41,8 +41,8 @@ import java.util.Map;
  * <p>Para produção, recomenda-se que o front-end consuma diretamente os endpoints REST
  * retornando {@link AdminResponse} ou DTOs, garantindo desacoplamento e consistência.</p>
  */
-@CrossOrigin("*")
 @RestController
+@CrossOrigin("*")
 @RequestMapping("/api/admin")
 public class AdminController {
 

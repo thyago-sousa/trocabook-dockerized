@@ -9,7 +9,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Implementação concreta da interface {@link IDadosService},
@@ -30,25 +29,17 @@ import org.springframework.beans.factory.annotation.Value;
 public class DadosService implements IDadosService{
     /** Cliente HTTP utilizado para realizar as requisições REST. */
     private final RestTemplate restTemplate;
-
-    /** * URL base da API externa.
-     * Este valor é injetado a partir do application.properties
-     * (ou sobrescrito pelo docker-compose.yml).
-     */
-    private final String api;
+    /** URL base da API externa. */
+    private static final String api = "http://trocabook-main:8080/dados";
 
     /**
-     * Construtor que injeta o RestTemplate e a URL base da API
-     * (definida pela propriedade 'api.base.url').
+     * Construtor que injeta a dependência {@link RestTemplate}.
      *
      * @param restTemplate cliente HTTP configurado pelo Spring
-     * @param api URL da API injetada via @Value
      */
     @Autowired
-    public DadosService(RestTemplate restTemplate,
-                        @Value("${api.base.url}") String api) {
+    public DadosService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.api = api;
     }
 
     /**

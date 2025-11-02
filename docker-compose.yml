@@ -8,7 +8,7 @@ services:
       - 'spring.datasource.url=jdbc:mysql://host.docker.internal:3306/trocabook'
       - 'spring.datasource.username=root'
       - 'spring.datasource.password=${DB_PASSWORD}'
-      - 'api.base.url=http://trocabook-admin:8181/dados'
+      - 'api.base.url=http://trocabook-admin:8181/api/admin'
       - 'chat.api.base.url=http://trocabook-chat:8282/api/chat'
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}

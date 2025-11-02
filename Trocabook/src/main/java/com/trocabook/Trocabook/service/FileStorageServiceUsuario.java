@@ -46,7 +46,7 @@ public class FileStorageServiceUsuario {
 
         Files.copy(arquivo.getInputStream(), caminhoDestino);
 
-        return "http://localhost:8080/uploads/" + tipo + "/" + nomeUnico;
+        return "http://trocabook-main:8080/uploads/" + tipo + "/" + nomeUnico;
     }
 
     public String armazenarArquivoUsuario(MultipartFile arquivo) throws IOException {

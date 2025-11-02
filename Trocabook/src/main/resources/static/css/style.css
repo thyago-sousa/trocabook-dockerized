@@ -723,9 +723,14 @@ table th, td {
 }
 
 .message {
+    position: relative;
     max-width: 60%;
     border-radius: 10px;
     background-color: white;
+    padding: 10px 35px 10px 10px; /* adiciona espaço à direita pro ícone */
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .message p {
@@ -810,6 +815,58 @@ table th, td {
     font-size: 14px;
     color: #333;
 }
+
+/* container do menu */
+.menu-opcoes {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+}
+
+/* ícone de três pontinhos */
+.menu-opcoes i {
+    cursor: pointer;
+    color: #555;
+    font-size: 16px;
+    font-size: 18px;
+    opacity: 1;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.menu-opcoes i:hover {
+    color: #000;
+}
+
+/* dropdown do menu */
+.menu-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 25px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+}
+
+.menu-dropdown button {
+    display: block;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.menu-dropdown button:hover {
+    background-color: #f2f2f2;
+}
+
+
 
 
 /* Container que mantém input e dropdown alinhados */
